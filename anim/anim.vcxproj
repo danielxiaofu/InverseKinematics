@@ -68,6 +68,7 @@
       <ProgramDatabaseFile>$(OutDir)animp.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,11 +98,14 @@
     <ClCompile Include="BaseObject.cpp" />
     <ClCompile Include="BaseSimulator.cpp" />
     <ClCompile Include="GlobalResourceManager.cpp" />
+    <ClCompile Include="Joint.cpp" />
     <ClCompile Include="myScene.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SampleGravitySimulator.cpp" />
     <ClCompile Include="SampleParticle.cpp" />
     <ClCompile Include="BaseSystem.cpp" />
+    <ClCompile Include="SkeletonSimulator.cpp" />
+    <ClCompile Include="SkeletonSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseSystem.h" />
@@ -110,10 +114,13 @@
     <ClInclude Include="BaseObject.h" />
     <ClInclude Include="BaseSimulator.h" />
     <ClInclude Include="GlobalResourceManager.h" />
+    <ClInclude Include="Joint.h" />
     <ClInclude Include="myScene.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SampleGravitySimulator.h" />
     <ClInclude Include="SampleParticle.h" />
+    <ClInclude Include="SkeletonSimulator.h" />
+    <ClInclude Include="SkeletonSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GLModel\GLModel.vcxproj">

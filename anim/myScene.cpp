@@ -23,6 +23,9 @@
 #include "myScene.h"
 #include "SampleParticle.h"
 #include "SampleGravitySimulator.h"
+#include "SkeletonSystem.h"
+#include "SkeletonSimulator.h"
+#include "Joint.h"
 #include <util/jama/tnt_stopwatch.h>
 #include <util/jama/jama_lu.h>
 
@@ -32,6 +35,8 @@
 // - TCL_LINK_FLOAT
 
 int g_testVariable = 10;
+
+void initializeJoints(SkeletonSystem* skeleton);
 
 SETVAR myScriptVariables[] = {
 	"testVariable", TCL_LINK_INT, (char *) &g_testVariable,
@@ -164,6 +169,37 @@ static int testGlobalCommand(ClientData clientData, Tcl_Interp *interp, int argc
 
 }	// testGlobalCommand
 
+static int partOneGlobalCommand(ClientData clientData, Tcl_Interp *interp, int argc, myCONST_SPEC char **argv)
+{
+	GlobalResourceManager::use()->clearAll();
+
+	bool success;
+
+	// register a skeleton system
+	SkeletonSystem* bob = new SkeletonSystem("bob");
+
+	success = GlobalResourceManager::use()->addSystem(bob, true);
+
+	// make sure it was registered successfully
+	assert(success);
+
+	// register a simulator
+	SkeletonSimulator* iksim =
+		new SkeletonSimulator("iksim", bob);
+
+	success = GlobalResourceManager::use()->addSimulator(iksim);
+
+	// make sure it was registered successfully
+	assert(success);
+
+	initializeJoints(bob);
+
+	glutPostRedisplay();
+
+	return TCL_OK;
+
+}	// testGlobalCommand
+
 void mySetScriptCommands(Tcl_Interp *interp)
 {
 
@@ -172,5 +208,125 @@ void mySetScriptCommands(Tcl_Interp *interp)
 
 	Tcl_CreateCommand(interp, "test", testGlobalCommand, (ClientData) NULL,
 					  (Tcl_CmdDeleteProc *)	NULL);
+	Tcl_CreateCommand(interp, "part1", partOneGlobalCommand, (ClientData)NULL,
+					(Tcl_CmdDeleteProc *)NULL);
 
 }	// mySetScriptCommands
+
+void initializeJoints(SkeletonSystem* skeleton)
+{
+	Joint* root = new Joint("root");
+	GlobalResourceManager::use()->addObject(root, true);
+	skeleton->addJoint(root);
+
+	Joint* spine = new Joint("spine");
+	spine->initialize(2.0, 0.0, 0.0, 1.0, 90);
+	GlobalResourceManager::use()->addObject(spine, true);
+	skeleton->addJoint(spine);
+
+	Joint* leftShoulder = new Joint("leftShoulder");
+	leftShoulder->initialize(0.5, 0.0, 0.0, 1.0, 45);
+	GlobalResourceManager::use()->addObject(leftShoulder, true);
+	skeleton->addJoint(leftShoulder);
+
+	Joint* leftElbow = new Joint("leftElbow");
+	leftElbow->initialize(1.0, 0.0, 0.0, 1.0, 45);
+	GlobalResourceManager::use()->addObject(leftElbow, true);
+	skeleton->addJoint(leftElbow);
+
+	Joint* leftWrist = new Joint("leftWrist");
+	leftWrist->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	GlobalResourceManager::use()->addObject(leftWrist, true);
+	skeleton->addJoint(leftWrist);
+
+	Joint* leftHand = new Joint("leftHand");
+	leftHand->initialize(0.5, 0.0, 0.0, 1.0, 0);
+	GlobalResourceManager::use()->addObject(leftHand, true);
+	skeleton->addEndEffector(leftHand);
+	
+	skeleton->traverseUp(); // go back to leftWrist
+	skeleton->traverseUp(); // go back to leftElbow
+	skeleton->traverseUp(); // go back to leftShoulder
+	skeleton->traverseUp(); // go back to spine
+
+	Joint* rightShoulder = new Joint("rightShoulder");
+	rightShoulder->initialize(0.5, 0.0, 0.0, 1.0, -45);
+	GlobalResourceManager::use()->addObject(rightShoulder, true);
+	skeleton->addJoint(rightShoulder);
+
+	Joint* rightElbow = new Joint("rightElbow");
+	rightElbow->initialize(1.0, 0.0, 0.0, 1.0, -45);
+	GlobalResourceManager::use()->addObject(rightElbow, true);
+	skeleton->addJoint(rightElbow);
+
+	Joint* rightWrist = new Joint("rightWrist");
+	rightWrist->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	GlobalResourceManager::use()->addObject(rightWrist, true);
+	skeleton->addJoint(rightWrist);
+
+	Joint* rightHand = new Joint("rightHand");
+	rightHand->initialize(0.5, 0.0, 0.0, 1.0, 0);
+	GlobalResourceManager::use()->addObject(rightHand, true);
+	skeleton->addJoint(rightHand);
+
+	// go back to spine
+	skeleton->traverseUp();
+	skeleton->traverseUp(); 
+	skeleton->traverseUp();
+	skeleton->traverseUp();
+
+	Joint* head = new Joint("head");
+	head->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	GlobalResourceManager::use()->addObject(head, true);
+	skeleton->addJoint(head);
+
+	// go back to root
+	skeleton->traverseUp();
+	skeleton->traverseUp();
+
+	Joint* leftHip = new Joint("leftHip");
+	leftHip->initialize(0.5, 0.0, 0.0, 1.0, 225);
+	GlobalResourceManager::use()->addObject(leftHip, true);
+	skeleton->addJoint(leftHip);
+
+	Joint* leftThigh = new Joint("leftThigh");
+	leftThigh->initialize(1.0, 0.0, 0.0, 1.0, 45);
+	GlobalResourceManager::use()->addObject(leftThigh, true);
+	skeleton->addJoint(leftThigh);
+
+	Joint* leftLeg = new Joint("leftLeg");
+	leftLeg->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	GlobalResourceManager::use()->addObject(leftLeg, true);
+	skeleton->addJoint(leftLeg);
+
+	Joint* leftFoot = new Joint("leftFoot");
+	leftFoot->initialize(0.5, 0.0, 0.0, 1.0, 0);
+	GlobalResourceManager::use()->addObject(leftFoot, true);
+	skeleton->addJoint(leftFoot);
+
+	// go back to root
+	skeleton->traverseUp();
+	skeleton->traverseUp();
+	skeleton->traverseUp();
+	skeleton->traverseUp();
+
+	Joint* rightHip = new Joint("rightHip");
+	rightHip->initialize(0.5, 0.0, 0.0, 1.0, -45);
+	GlobalResourceManager::use()->addObject(rightHip, true);
+	skeleton->addJoint(rightHip);
+
+	Joint* rightThigh = new Joint("rightThigh");
+	rightThigh->initialize(1.0, 0.0, 0.0, 1.0, -45);
+	GlobalResourceManager::use()->addObject(rightThigh, true);
+	skeleton->addJoint(rightThigh);
+
+	Joint* rightLeg = new Joint("rightLeg");
+	rightLeg->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	GlobalResourceManager::use()->addObject(rightLeg, true);
+	skeleton->addJoint(rightLeg);
+
+	Joint* rightFoot = new Joint("rightFoot");
+	rightFoot->initialize(0.5, 0.0, 0.0, 1.0, 0);
+	GlobalResourceManager::use()->addObject(rightFoot, true);
+	skeleton->addJoint(rightFoot);
+}
