@@ -12,27 +12,44 @@ public:
 
 	void reset(double time);
 
-	void initialize(double length_, double rx, double ry, double rz, double angle);
+	// set initial position of the joint relative to its parent
+	void initialize(double x, double y, double z);
 
 	// set passed joint as the parent of this joint, also add to parent's children list
 	void parentTo(Joint* parent_);
 
 	void startDraw();
 
-	double getLength() { return length; }
+	void getPosition(Vector outPos) { VecCopy(outPos, pos); }
 
-	double getRotation(Vector outRotAxis) { VecCopy(outRotAxis, rotAxis); return rotAngle; }
+	void getRotation(Vector outRot) { VecCopy(outRot, rot); }
 
 	void isolate();
 
 	Joint* getParent() { return parent; }
 
+	void setRotateX(double x) { rot[0] = x; }
+
+	void setRotateY(double y) { rot[1] = y; }
+
+	void setRotateZ(double z) { rot[2] = z; }
+
+	// rotate around x axis by x degrees at next draw call
+	void rotateX(double x) { dx = x; }
+
+	// rotate around y axis by y degrees at next draw call
+	void rotateY(double y) { dy = y; }
+
+	// rotate around z axis by z degrees at next draw call
+	void rotateZ(double z) { dz = z; }
+
 protected:
 	
-	Vector rotAxis; // rotation axis of the joint relative to parent
+	Vector rot; // angle of rotation (x, y, z) of the joint relative to its parent , in degrees
+	Vector pos; // position of joint relative to parent
+	Vector xAxis = {1.0, 0.0, 0.0};
 
-	double rotAngle; // in degrees
-	double length; // distance between this joint and its parent (or length of bone)
+	double dx, dy, dz; // delta angle of rotation each frame (will be cleared after drawing)
 
 	Joint* parent;
 	std::vector<Joint*> children;

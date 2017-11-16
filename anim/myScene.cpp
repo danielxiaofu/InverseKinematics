@@ -220,54 +220,54 @@ void initializeJoints(SkeletonSystem* skeleton)
 	skeleton->addJoint(root);
 
 	Joint* spine = new Joint("spine");
-	spine->initialize(2.0, 0.0, 0.0, 1.0, 90);
+	spine->initialize(0.0, 2.0, 0.0);
 	GlobalResourceManager::use()->addObject(spine, true);
 	skeleton->addJoint(spine);
 
+	Joint* leftCollar = new Joint("leftCollar");
+	leftCollar->initialize(-0.25, 0.1, 0.0);
+	GlobalResourceManager::use()->addObject(leftCollar, true);
+	skeleton->addJoint(leftCollar);
+
 	Joint* leftShoulder = new Joint("leftShoulder");
-	leftShoulder->initialize(0.5, 0.0, 0.0, 1.0, 45);
+	leftShoulder->initialize(-1.0, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(leftShoulder, true);
 	skeleton->addJoint(leftShoulder);
 
 	Joint* leftElbow = new Joint("leftElbow");
-	leftElbow->initialize(1.0, 0.0, 0.0, 1.0, 45);
+	leftElbow->initialize(-1.0, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(leftElbow, true);
 	skeleton->addJoint(leftElbow);
 
 	Joint* leftWrist = new Joint("leftWrist");
-	leftWrist->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	leftWrist->initialize(-0.5, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(leftWrist, true);
-	skeleton->addJoint(leftWrist);
-
-	Joint* leftHand = new Joint("leftHand");
-	leftHand->initialize(0.5, 0.0, 0.0, 1.0, 0);
-	GlobalResourceManager::use()->addObject(leftHand, true);
-	skeleton->addEndEffector(leftHand);
+	skeleton->addEndEffector(leftWrist);
 	
 	skeleton->traverseUp(); // go back to leftWrist
 	skeleton->traverseUp(); // go back to leftElbow
 	skeleton->traverseUp(); // go back to leftShoulder
 	skeleton->traverseUp(); // go back to spine
 
+	Joint* rightCollar = new Joint("rightCollar");
+	rightCollar->initialize(0.25, 0.1, 0.0);
+	GlobalResourceManager::use()->addObject(rightCollar, true);
+	skeleton->addJoint(rightCollar);
+
 	Joint* rightShoulder = new Joint("rightShoulder");
-	rightShoulder->initialize(0.5, 0.0, 0.0, 1.0, -45);
+	rightShoulder->initialize(1.0, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightShoulder, true);
 	skeleton->addJoint(rightShoulder);
 
 	Joint* rightElbow = new Joint("rightElbow");
-	rightElbow->initialize(1.0, 0.0, 0.0, 1.0, -45);
+	rightElbow->initialize(1.0, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightElbow, true);
 	skeleton->addJoint(rightElbow);
 
 	Joint* rightWrist = new Joint("rightWrist");
-	rightWrist->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	rightWrist->initialize(0.5, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightWrist, true);
 	skeleton->addJoint(rightWrist);
-
-	Joint* rightHand = new Joint("rightHand");
-	rightHand->initialize(0.5, 0.0, 0.0, 1.0, 0);
-	GlobalResourceManager::use()->addObject(rightHand, true);
-	skeleton->addJoint(rightHand);
 
 	// go back to spine
 	skeleton->traverseUp();
@@ -276,7 +276,7 @@ void initializeJoints(SkeletonSystem* skeleton)
 	skeleton->traverseUp();
 
 	Joint* head = new Joint("head");
-	head->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	head->initialize(0.0, 1.0, 0.0);
 	GlobalResourceManager::use()->addObject(head, true);
 	skeleton->addJoint(head);
 
@@ -285,22 +285,22 @@ void initializeJoints(SkeletonSystem* skeleton)
 	skeleton->traverseUp();
 
 	Joint* leftHip = new Joint("leftHip");
-	leftHip->initialize(0.5, 0.0, 0.0, 1.0, 225);
+	leftHip->initialize(-0.5, -0.2, 0.0);
 	GlobalResourceManager::use()->addObject(leftHip, true);
 	skeleton->addJoint(leftHip);
 
 	Joint* leftThigh = new Joint("leftThigh");
-	leftThigh->initialize(1.0, 0.0, 0.0, 1.0, 45);
+	leftThigh->initialize(0.0, -1.0, 0.0);
 	GlobalResourceManager::use()->addObject(leftThigh, true);
 	skeleton->addJoint(leftThigh);
 
 	Joint* leftLeg = new Joint("leftLeg");
-	leftLeg->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	leftLeg->initialize(0.0, -1.0, 0.0);
 	GlobalResourceManager::use()->addObject(leftLeg, true);
 	skeleton->addJoint(leftLeg);
 
 	Joint* leftFoot = new Joint("leftFoot");
-	leftFoot->initialize(0.5, 0.0, 0.0, 1.0, 0);
+	leftFoot->initialize(0.0, -0.5, 0.0);
 	GlobalResourceManager::use()->addObject(leftFoot, true);
 	skeleton->addJoint(leftFoot);
 
@@ -311,22 +311,22 @@ void initializeJoints(SkeletonSystem* skeleton)
 	skeleton->traverseUp();
 
 	Joint* rightHip = new Joint("rightHip");
-	rightHip->initialize(0.5, 0.0, 0.0, 1.0, -45);
+	rightHip->initialize(0.5, -0.2, 0.0);
 	GlobalResourceManager::use()->addObject(rightHip, true);
 	skeleton->addJoint(rightHip);
 
 	Joint* rightThigh = new Joint("rightThigh");
-	rightThigh->initialize(1.0, 0.0, 0.0, 1.0, -45);
+	rightThigh->initialize(0.0, -1.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightThigh, true);
 	skeleton->addJoint(rightThigh);
 
 	Joint* rightLeg = new Joint("rightLeg");
-	rightLeg->initialize(1.0, 0.0, 0.0, 1.0, 0);
+	rightLeg->initialize(0.0, -1.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightLeg, true);
 	skeleton->addJoint(rightLeg);
 
 	Joint* rightFoot = new Joint("rightFoot");
-	rightFoot->initialize(0.5, 0.0, 0.0, 1.0, 0);
+	rightFoot->initialize(0.0, -0.5, 0.0);
 	GlobalResourceManager::use()->addObject(rightFoot, true);
 	skeleton->addJoint(rightFoot);
 }

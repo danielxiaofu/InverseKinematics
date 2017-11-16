@@ -3,21 +3,18 @@
 Joint::Joint(const std::string & name) :
 		BaseObject(name)
 {
-	length = 0.0;
-	setVector(rotAxis, 0.0, 0.0, 0.0);
-	rotAngle = 0.0;
+	setVector(pos, 0.0, 0.0, 0.0);
+	setVector(rot, 0.0, 0.0, 0.0);
+	setVector(xAxis, 1.0, 0.0, 0.0);
 }
 
 void Joint::reset(double time)
 {
 }
 
-void Joint::initialize(double length_, double rx, double ry, double rz, double angle)
+void Joint::initialize(double x, double y, double z)
 {
-	length = length_;
-	setVector(rotAxis, rx, ry, rz);
-	VecNormalize(rotAxis);
-	rotAngle = angle;
+	setVector(pos, x, y, z);
 }
 
 void Joint::parentTo(Joint * parent_)
@@ -49,13 +46,29 @@ void Joint::draw()
 
 	for(Joint* child : children)
 	{
-		Vector rotAxis;
-		double length, angle;
-		length = child->getLength();
-		angle = child->getRotation(rotAxis);
+		Vector childRot, childPos;
+		double length, dot;
+		child->getPosition(childPos);
+		child->getRotation(childRot);
+
+		Vector toChild;
+		VecCopy(toChild, childPos);
+		length = VecLength(toChild);
+		VecNormalize(toChild);
+		
+		dot = VecDotProd(toChild, xAxis);
+		double drawAngle = acos(dot) / (DEG2RAD);
+		if (childPos[1] < 0)
+			drawAngle *= -1;
 
 		glPushMatrix();
-		glRotated(angle, rotAxis[0], rotAxis[1], rotAxis[2]);
+		glRotated(childRot[0], 1.0, 0.0, 0.0);
+		glRotated(childRot[1], 0.0, 1.0, 0.0);
+		glRotated(childRot[2], 0.0, 0.0, 1.0);
+
+		glPushMatrix();
+		glRotated(drawAngle, 0.0, 0.0, 1.0);
+
 		glLineWidth(3.0);
 		glBegin(GL_LINE_LOOP);
 		for (int i = 0; i < 360; i++)
@@ -64,7 +77,9 @@ void Joint::draw()
 			glVertex2f(cos(degInRad) * length / 2 + length / 2, sin(degInRad) * length / 8);
 		}
 		glEnd();
-		glTranslated(length, 0.0, 0.0); // align the child with its x-axis
+		glPopMatrix();
+
+		glTranslated(childPos[0], childPos[1], childPos[2]);
 		child->draw();
 		glPopMatrix();
 	}
