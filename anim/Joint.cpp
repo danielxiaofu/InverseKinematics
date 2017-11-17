@@ -6,6 +6,12 @@ Joint::Joint(const std::string & name) :
 	setVector(pos, 0.0, 0.0, 0.0);
 	setVector(rot, 0.0, 0.0, 0.0);
 	setVector(xAxis, 1.0, 0.0, 0.0);
+	trackWorldPos = false;
+	worldPos[0] = 0.0;
+	worldPos[1] = 0.0;
+	worldPos[2] = 0.0;
+	worldPos[3] = 1.0;
+	derivativeModeX = derivativeModeY = derivativeModeZ = false;
 }
 
 void Joint::reset(double time)
@@ -39,10 +45,116 @@ void Joint::isolate()
 	children.clear();
 }
 
+void Joint::getWorldPosition(Vector outPos)
+{
+	if (!trackWorldPos)
+	{
+		zeroVector(outPos);
+		return;
+	}
+	setVector(outPos, worldPos[0], worldPos[1], worldPos[2]);
+}
+
+Matrix Joint::getRotXMatrix()
+{
+	double cosX = cos(rot[0] * DEG2RAD);
+	double sinX = sin(rot[0] * DEG2RAD);
+	if (!derivativeModeX)
+	{
+		double matrix[4][4] = 
+		{
+			{1.0, 0.0, 0.0, 0.0},
+			{0.0, cosX, -sinX, 0.0},
+			{0.0, sinX, cosX, 0.0},
+			{0.0, 0.0, 0.0, 1.0}
+		};
+		return Matrix(matrix);
+	}
+	else
+	{
+		double matrixDrv[4][4] =
+		{
+			{0.0, 0.0, 0.0, 0.0},
+			{0.0, -sinX, -cosX, 0.0},
+			{0.0, cosX, -sinX, 0.0},
+			{0.0, 0.0, 0.0, 1.0}
+		};
+		return Matrix(matrixDrv);
+	}
+}
+
+Matrix Joint::getRotYMatrix()
+{
+	double cosY = cos(rot[1] * DEG2RAD);
+	double sinY = sin(rot[1] * DEG2RAD);
+	if (!derivativeModeY)
+	{
+		double matrix[4][4] =
+		{
+			{ cosY, 0.0, sinY, 0.0 },
+			{ 0.0, 1.0, 0.0, 0.0 },
+			{ -sinY, 0.0, cosY, 0.0 },
+			{ 0.0, 0.0, 0.0, 1.0 }
+		};
+		return Matrix(matrix);
+	}
+	else
+	{
+		double matrixDrv[4][4] =
+		{
+			{ -sinY, 0.0, cosY, 0.0 },
+			{ 0.0, 0.0, 0.0, 0.0 },
+			{ -cosY, 0.0, -sinY, 0.0 },
+			{ 0.0, 0.0, 0.0, 1.0 }
+		};
+		return Matrix(matrixDrv);
+	}
+}
+
+Matrix Joint::getRotZMatrix()
+{
+	double cosZ = cos(rot[2] * DEG2RAD);
+	double sinZ = sin(rot[2] * DEG2RAD);
+	if (!derivativeModeY)
+	{
+		double matrix[4][4] =
+		{
+			{ cosZ, -sinZ, 0.0, 0.0 },
+			{ sinZ, cosZ, 0.0, 0.0 },
+			{ 0.0, 0.0, 1.0, 0.0 },
+			{ 0.0, 0.0, 0.0, 1.0 }
+		};
+		return Matrix(matrix);
+	}
+	else
+	{
+		double matrixDrv[4][4] =
+		{
+			{ -sinZ, -cosZ, 0.0, 0.0 },
+			{ cosZ, -sinZ, 0.0, 0.0 },
+			{ 0.0, 0.0, 0.0, 0.0 },
+			{ 0.0, 0.0, 0.0, 1.0 }
+		};
+		return Matrix(matrixDrv);
+	}
+}
+
+Matrix Joint::getTranslateMatrix()
+{
+	double matrixDrv[4][4] =
+	{
+		{ 1.0, 0.0, 0.0, pos[0] },
+		{ 0.0, 1.0, 0.0, pos[1] },
+		{ 0.0, 0.0, 1.0, pos[2] },
+		{ 0.0, 0.0, 0.0, 1.0 }
+	};
+	return Matrix(matrixDrv);
+}
+
+
+
 void Joint::draw()
 {
-	if (children.size() == 0)
-		return;
 
 	for(Joint* child : children)
 	{
@@ -82,6 +194,22 @@ void Joint::draw()
 		glTranslated(childPos[0], childPos[1], childPos[2]);
 		child->draw();
 		glPopMatrix();
+	}
+
+	if (trackWorldPos)
+	{
+		//glPushMatrix();
+
+		//glRotated(rot[0], 1.0, 0.0, 0.0);
+		//glRotated(rot[1], 0.0, 1.0, 0.0);
+		//glRotated(rot[2], 0.0, 0.0, 1.0);
+		
+		GLfloat mvMatrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, mvMatrix);
+
+		worldPos[0] = mvMatrix[12];
+		worldPos[1] = mvMatrix[13];
+		worldPos[2] = 0.0;
 	}
 
 }

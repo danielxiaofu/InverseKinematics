@@ -5,6 +5,7 @@ SkeletonSimulator::SkeletonSimulator(const std::string & name, BaseSystem * targ
 	BaseSimulator(name),
 	m_object(target)
 {
+	
 }
 
 SkeletonSimulator::~SkeletonSimulator()
