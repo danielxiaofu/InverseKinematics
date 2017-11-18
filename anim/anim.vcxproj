@@ -99,6 +99,7 @@
     <ClCompile Include="BaseSimulator.cpp" />
     <ClCompile Include="GlobalResourceManager.cpp" />
     <ClCompile Include="Joint.cpp" />
+    <ClCompile Include="LUDecompose.cpp" />
     <ClCompile Include="myScene.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SampleGravitySimulator.cpp" />
@@ -115,6 +116,7 @@
     <ClInclude Include="BaseSimulator.h" />
     <ClInclude Include="GlobalResourceManager.h" />
     <ClInclude Include="Joint.h" />
+    <ClInclude Include="LUDecompose.h" />
     <ClInclude Include="myScene.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SampleGravitySimulator.h" />

@@ -195,7 +195,7 @@ static int partOneGlobalCommand(ClientData clientData, Tcl_Interp *interp, int a
 	initializeJoints(bob);
 
 	// note: can only rotate around z due to viewing issues when computing endEff position
-	bob->setInitialAngles(0, 0, 45, 0, 0, 0, -30);
+	bob->setAngleParameter(0, 0, 45, 0, 0, -30, 0);
 
 	glutPostRedisplay();
 
@@ -226,11 +226,13 @@ void initializeJoints(SkeletonSystem* skeleton)
 	spine->initialize(0.0, 2.0, 0.0);
 	GlobalResourceManager::use()->addObject(spine, true);
 	skeleton->addJoint(spine);
+	skeleton->setSpine(spine);
 
 	Joint* leftCollar = new Joint("leftCollar");
 	leftCollar->initialize(-0.25, 0.1, 0.0);
 	GlobalResourceManager::use()->addObject(leftCollar, true);
 	skeleton->addJoint(leftCollar);
+	skeleton->setLeftCollar(leftCollar);
 
 	Joint* leftShoulder = new Joint("leftShoulder");
 	leftShoulder->initialize(-1.0, 0.0, 0.0);

@@ -8,9 +8,13 @@ class SkeletonSimulator :
 {
 public:
 	SkeletonSimulator(const std::string& name, BaseSystem* target);
-	~SkeletonSimulator();
+
+	int step(double time);
+	int init(double time);
 
 protected:
 	BaseSystem* m_object;
+
+	double previous;
 };
 

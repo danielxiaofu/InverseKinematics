@@ -174,9 +174,9 @@ void Joint::draw()
 			drawAngle *= -1;
 
 		glPushMatrix();
-		glRotated(childRot[0], 1.0, 0.0, 0.0);
-		glRotated(childRot[1], 0.0, 1.0, 0.0);
 		glRotated(childRot[2], 0.0, 0.0, 1.0);
+		glRotated(childRot[1], 0.0, 1.0, 0.0);
+		glRotated(childRot[0], 1.0, 0.0, 0.0);
 
 		glPushMatrix();
 		glRotated(drawAngle, 0.0, 0.0, 1.0);
