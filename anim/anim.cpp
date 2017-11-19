@@ -73,8 +73,8 @@ void SimulationStep(void)
 
 	GlobalResourceManager::use()->stepAllSimulators();
 
-	animTcl::OutputMessage("This is the simulation time %lf", 
-		GlobalResourceManager::use()->getSimulationTime() );
+	//animTcl::OutputMessage("This is the simulation time %lf", 
+		//GlobalResourceManager::use()->getSimulationTime() );
 }
 
 

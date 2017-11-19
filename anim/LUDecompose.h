@@ -7,7 +7,7 @@
 #include <util/util.h>
 
 
-int LUPdecompose(double a[3][3], int p[3]);
+int LUPdecompose(double a[4][4], int p[4]);
 
-int LUPinverse(int P[3], double LU[3][3], double B[3][3], double X[3], double Y[3]);
+int LUPinverse(int P[4], double LU[4][4], double B[4][4], double X[4], double Y[4]);
 

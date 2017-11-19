@@ -98,6 +98,7 @@
     <ClCompile Include="BaseObject.cpp" />
     <ClCompile Include="BaseSimulator.cpp" />
     <ClCompile Include="GlobalResourceManager.cpp" />
+    <ClCompile Include="Hermite.cpp" />
     <ClCompile Include="Joint.cpp" />
     <ClCompile Include="LUDecompose.cpp" />
     <ClCompile Include="myScene.cpp" />
@@ -115,6 +116,7 @@
     <ClInclude Include="BaseObject.h" />
     <ClInclude Include="BaseSimulator.h" />
     <ClInclude Include="GlobalResourceManager.h" />
+    <ClInclude Include="Hermite.h" />
     <ClInclude Include="Joint.h" />
     <ClInclude Include="LUDecompose.h" />
     <ClInclude Include="myScene.h" />

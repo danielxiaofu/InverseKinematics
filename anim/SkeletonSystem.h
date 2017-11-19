@@ -41,7 +41,12 @@ public:
 	// get initial position of endEff
 	void getInitialPos(Vector outPos);
 
-	void setAngleParameter(double shoulderX, double shoulderY, double shoulderZ, double elbowX, double elbowY, double wristZ, double wristY);
+	// set initial angle parameter and compute start position of end effector
+	void initialize(double shoulderX, double shoulderY, double shoulderZ, double elbowX, double elbowY, double wristY, double wristZ);
+
+	void setAngleParameter(double shoulderX, double shoulderY, double shoulderZ, double elbowX, double elbowY, double wristY, double wristZ);
+
+	void computeJointTransform();
 
 	// recalculate jacobian matrix based on current joint angles
 	void updateJacobian();
@@ -58,7 +63,7 @@ protected:
 
 	// initial position of endEff
 	Vector startPos;
-	// global position of endEff (extracted from model view matrix)
+	// global position of endEff
 	Vector endEffPos;
 	// destination of endEff next frame
 	Vector destination;
@@ -67,7 +72,7 @@ protected:
 	/* seven angle parameters that define the position of end effector
 	 * shoulder: rx(t1), ry(t2), rz(t3)
 	 * elbow: rx(t4), ry(t5)
-	 * wrist: ry(t7), rz(t6)
+	 * wrist: ry(t6), rz(t7)
 	 */
 	double t1, t2, t3, t4, t5, t6, t7;
 
@@ -78,10 +83,12 @@ protected:
 	double JJt[3][3];
 	double inverseJJt[3][3];
 
+	double threshold;
+
 	void updateJointAngle();
 
 	/* compute matrix sequence that form the column of jacobian
-	 * Troot * Tspine * Tcollar * RshoulderZ * RshoulderY * RshoulderX * Tshoulder * RelbowY * RelbowX * Telbow * RwristY * RwristZ * Twrist
+	 * Troot * Tspine * Tcollar * RshoulderZ * RshoulderY * RshoulderX * Tshoulder * RelbowY * RelbowX * Telbow * RwristZ * RwristY * Twrist
 	 */
 	void computeMatrixSequence(double* result);
 

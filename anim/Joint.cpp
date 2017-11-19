@@ -12,6 +12,7 @@ Joint::Joint(const std::string & name) :
 	worldPos[2] = 0.0;
 	worldPos[3] = 1.0;
 	derivativeModeX = derivativeModeY = derivativeModeZ = false;
+	parent = nullptr;
 }
 
 void Joint::reset(double time)
@@ -34,9 +35,26 @@ void Joint::addChild(Joint * child)
 	children.push_back(child);
 }
 
+void Joint::computeGlobalTransform(Matrix parentTransform)
+{
+	derivativeModeX = derivativeModeY = derivativeModeZ = false;
+
+	Matrix allRotation = parentTransform * getRotZMatrix() * getRotYMatrix() * getRotXMatrix();
+	double temp[4] = { 0.0, 0.0, 0.0, 1.0 };
+	//allRotation.multiplyByVector(worldPos, temp);
+
+	tranformMat = parentTransform * getTranslateMatrix() * getRotZMatrix() * getRotYMatrix() * getRotXMatrix();
+	tranformMat.multiplyByVector(worldPos, temp);
+
+	for (Joint* child : children)
+		child->computeGlobalTransform(tranformMat);
+
+}
+
 void Joint::startDraw()
 {
-	draw();
+	globalDraw();
+	localDraw();
 }
 
 void Joint::isolate()
@@ -47,12 +65,15 @@ void Joint::isolate()
 
 void Joint::getWorldPosition(Vector outPos)
 {
-	if (!trackWorldPos)
-	{
-		zeroVector(outPos);
-		return;
-	}
 	setVector(outPos, worldPos[0], worldPos[1], worldPos[2]);
+}
+
+Joint * Joint::getChild(int index)
+{
+	if (index < 0 || index >= childCount())
+		return nullptr;
+
+	return children[index];
 }
 
 Matrix Joint::getRotXMatrix()
@@ -153,11 +174,47 @@ Matrix Joint::getTranslateMatrix()
 
 
 
-void Joint::draw()
+void Joint::globalDraw()
 {
+	// method1: draw child
+	/*Vector worldPosition;
+	getWorldPosition(worldPosition);
 
-	for(Joint* child : children)
+	for (Joint* child : children)
 	{
+		Vector childPos;
+		child->getWorldPosition(childPos);
+
+		glLineWidth(3.0);
+		glBegin(GL_LINES);
+		glVertex3d(worldPosition[0], worldPosition[1], worldPosition[2]);
+		glVertex3d(childPos[0], childPos[1], childPos[2]);
+		glEnd();
+		child->globalDraw();
+	
+	}*/
+	
+	//method2: draw self
+	if (parent)
+	{
+		Vector parentPos, pos;
+		parent->getWorldPosition(parentPos);
+		getWorldPosition(pos);
+		glLineWidth(3.0);
+		glBegin(GL_LINES);
+		glVertex3d(parentPos[0], parentPos[1], parentPos[2]);
+		glVertex3d(pos[0], pos[1], pos[2]);
+		glEnd();
+	}
+	for (Joint* child : children)
+		child->globalDraw();
+}
+
+void Joint::localDraw()
+{
+	for (Joint* child : children)
+	{
+		// use local position to draw
 		Vector childRot, childPos;
 		double length, dot;
 		child->getPosition(childPos);
@@ -167,17 +224,14 @@ void Joint::draw()
 		VecCopy(toChild, childPos);
 		length = VecLength(toChild);
 		VecNormalize(toChild);
-		
+
 		dot = VecDotProd(toChild, xAxis);
 		double drawAngle = acos(dot) / (DEG2RAD);
 		if (childPos[1] < 0)
-			drawAngle *= -1;
+		drawAngle *= -1;
 
 		glPushMatrix();
-		glRotated(childRot[2], 0.0, 0.0, 1.0);
-		glRotated(childRot[1], 0.0, 1.0, 0.0);
-		glRotated(childRot[0], 1.0, 0.0, 0.0);
-
+		
 		glPushMatrix();
 		glRotated(drawAngle, 0.0, 0.0, 1.0);
 
@@ -185,31 +239,27 @@ void Joint::draw()
 		glBegin(GL_LINE_LOOP);
 		for (int i = 0; i < 360; i++)
 		{
-			float degInRad = i * DEG2RAD;
-			glVertex2f(cos(degInRad) * length / 2 + length / 2, sin(degInRad) * length / 8);
+		float degInRad = i * DEG2RAD;
+		glVertex2f(cos(degInRad) * length / 2 + length / 2, sin(degInRad) * length / 8);
 		}
 		glEnd();
+
 		glPopMatrix();
+
+		// only draw lines
+		//glLineWidth(5.0);
+		//glBegin(GL_LINES);
+		//	glVertex3d(0.0, 0.0, 0.0);
+		//	glVertex3d(childPos[0], childPos[1], childPos[2]);
+		//glEnd();
 
 		glTranslated(childPos[0], childPos[1], childPos[2]);
-		child->draw();
+		glRotated(childRot[2], 0.0, 0.0, 1.0);
+		glRotated(childRot[1], 0.0, 1.0, 0.0);
+		glRotated(childRot[0], 1.0, 0.0, 0.0);
+		child->localDraw();
 		glPopMatrix();
 	}
 
-	if (trackWorldPos)
-	{
-		//glPushMatrix();
-
-		//glRotated(rot[0], 1.0, 0.0, 0.0);
-		//glRotated(rot[1], 0.0, 1.0, 0.0);
-		//glRotated(rot[2], 0.0, 0.0, 1.0);
-		
-		GLfloat mvMatrix[16];
-		glGetFloatv(GL_MODELVIEW_MATRIX, mvMatrix);
-
-		worldPos[0] = mvMatrix[12];
-		worldPos[1] = mvMatrix[13];
-		worldPos[2] = 0.0;
-	}
 
 }

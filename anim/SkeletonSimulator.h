@@ -14,6 +14,7 @@ public:
 
 protected:
 	BaseSystem* m_object;
+	Vector velocity;
 
 	double previous;
 };

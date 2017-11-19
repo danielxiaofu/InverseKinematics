@@ -60,7 +60,7 @@ struct Matrix
 			for (int j = 0; j < 4; j++)
 			{
 				for (int k = 0; k < 4; k++)
-					result[i][j] += matrix[i][k] * rhsMat[k][i];
+					result[i][j] += matrix[i][k] * rhsMat[k][j];
 			}
 			
 		return Matrix(result);
@@ -117,6 +117,10 @@ public:
 	// get world position, only work if trackWorldPos is true 
 	void getWorldPosition(Vector outPos);
 
+	Joint* getChild(int index);
+
+	int childCount() { return children.size(); }
+
 	// return rotation matrix around x-axis, will return derivative of matrix when derivativeModeX is true
 	Matrix getRotXMatrix();
 	// return rotation matrix around y-axis, will return derivative of matrix when derivativeModeY is true
@@ -125,6 +129,9 @@ public:
 	Matrix getRotZMatrix();
 
 	Matrix getTranslateMatrix();
+
+	// given transform of its parent, compute the global transform and world position of this joint and its children
+	void computeGlobalTransform(Matrix parentTransform);
 
 protected:
 	
@@ -141,12 +148,18 @@ protected:
 	Joint* parent;
 	std::vector<Joint*> children;
 
+	// global transform matrix of this joint
+	Matrix tranformMat;
+
 	bool derivativeModeX;
 	bool derivativeModeY;
 	bool derivativeModeZ;
 
-	void draw();
+	void globalDraw();
+	void localDraw();
 
 	void addChild(Joint* child);
+
+	
 };
 
