@@ -239,7 +239,7 @@ void Hermite::display(GLenum mode)
 		return;
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	glColor3f(1.0, 1.0, 1.0);
+	glColor3f(1.0, 0.0, 1.0);
 	glDisable(GL_LIGHTING);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix() ;
@@ -559,7 +559,7 @@ double Hermite::_findArcLengthLinearSearchNormalized(double arcLength)
 
 		output = parm * high + (1.0 - parm) * low;
 
-		animTcl::OutputMessage("t value %f", output);
+		//animTcl::OutputMessage("t value %f", output);
 
 		return output;
 

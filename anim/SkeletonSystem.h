@@ -46,6 +46,8 @@ public:
 
 	void setAngleParameter(double shoulderX, double shoulderY, double shoulderZ, double elbowX, double elbowY, double wristY, double wristZ);
 
+	void setDestination(VectorObj& dest);
+
 	void computeJointTransform();
 
 	// recalculate jacobian matrix based on current joint angles
@@ -65,9 +67,11 @@ protected:
 	Vector startPos;
 	// global position of endEff
 	Vector endEffPos;
-	// destination of endEff next frame
-	Vector destination;
+	
 	Vector velocity;
+
+	// final destination of end effector
+	Vector destination;
 
 	/* seven angle parameters that define the position of end effector
 	 * shoulder: rx(t1), ry(t2), rz(t3)
@@ -76,7 +80,7 @@ protected:
 	 */
 	double t1, t2, t3, t4, t5, t6, t7;
 
-	bool firstDisplay;
+	bool transposeMode;
 
 	double jacobian[3][7];
 	double transposeJ[7][3];
@@ -99,6 +103,7 @@ protected:
 
 	bool computeInverseJJt();
 
-	void solveIK();
+	// Solve ik. If transposeMode is true, transPoseJacobian will be used to compute delta angle instead of pseudo inverse 
+	void solveIK(bool transposeMode);
 };
 

@@ -54,7 +54,14 @@ void Joint::computeGlobalTransform(Matrix parentTransform)
 void Joint::startDraw()
 {
 	globalDraw();
+
+	glPushMatrix();
+	glTranslated(pos[0], pos[1], pos[2]);
+	glRotated(rot[2], 0.0, 0.0, 1.0);
+	glRotated(rot[1], 0.0, 1.0, 0.0);
+	glRotated(rot[0], 1.0, 0.0, 0.0);
 	localDraw();
+	glPopMatrix();
 }
 
 void Joint::isolate()
@@ -200,10 +207,11 @@ void Joint::globalDraw()
 		Vector parentPos, pos;
 		parent->getWorldPosition(parentPos);
 		getWorldPosition(pos);
+		glColor3f(0.0, 1.0, 0.0);
 		glLineWidth(3.0);
 		glBegin(GL_LINES);
-		glVertex3d(parentPos[0], parentPos[1], parentPos[2]);
-		glVertex3d(pos[0], pos[1], pos[2]);
+		glVertex3f(parentPos[0], parentPos[1], parentPos[2]);
+		glVertex3f(pos[0], pos[1], pos[2]);
 		glEnd();
 	}
 	for (Joint* child : children)
@@ -234,7 +242,7 @@ void Joint::localDraw()
 		
 		glPushMatrix();
 		glRotated(drawAngle, 0.0, 0.0, 1.0);
-
+		glColor3f(0.0, 1.0, 0.0);
 		glLineWidth(3.0);
 		glBegin(GL_LINE_LOOP);
 		for (int i = 0; i < 360; i++)

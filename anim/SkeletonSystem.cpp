@@ -9,8 +9,10 @@ SkeletonSystem::SkeletonSystem(const std::string & name)
 	endEffector = NULL;
 	t1 = t2 = t3 = t4 = t5 = t6 = t7 = 0.0;
 	zeroVector(endEffPos);
-	firstDisplay = true;
-	threshold = 0.9;
+	zeroVector(destination);
+	transposeMode = false;
+	threshold = 0.94;
+	
 }
 
 void SkeletonSystem::getState(double * p)
@@ -27,26 +29,31 @@ void SkeletonSystem::setState(double * p)
 	// compute velocity
 	Vector newTarget;
 	setVector(newTarget, p[1], p[2], p[3]);
+	setVector(destination, p[4], p[5], p[6]);
+
 	endEffector->getWorldPosition(endEffPos);
 	VecSubtract(velocity, newTarget, endEffPos);
-	//setVector(velocity, 50.0, 0.0, 0.0);
-	//VecNormalize(velocity);
 	Vector targetP, error;
 	
 	VecAdd(targetP, endEffPos, velocity);
 	while (true)
 	{
 		VecSubtract(error, targetP, endEffPos);
-		solveIK();
+		solveIK(transposeMode);
 		computeJointTransform();
 		endEffector->getWorldPosition(endEffPos);
 		double err = VecLength(error);
-		animTcl::OutputMessage("error = %f", err);
+		//animTcl::OutputMessage("error = %f", err);
 		if (err <= threshold)
+		{
+			transposeMode = false;
 			break;
+		}
+		else if (err > threshold * 4)
+			transposeMode = true;
 
 		VecSubtract(velocity, targetP, endEffPos);
-		VecNormalize(velocity);
+		VecScale(velocity, 0.5);
 	}
 	//solveIK();
 	
@@ -63,26 +70,18 @@ void SkeletonSystem::display(GLenum mode)
 	// tell all joints to draw themselves
 	root->startDraw();
 	
-	//glMatrixMode(GL_MODELVIEW);
-	//glPushMatrix();
-	//if (root)
-	//	root->startDraw();
 	endEffector->getWorldPosition(endEffPos);
 	//animTcl::OutputMessage("endEffPos = %.2f, %.2f, %.2f", endEffPos[0], endEffPos[1], endEffPos[2]);
-	glPointSize(5.0);
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	glDisable(GL_LIGHTING);
+	glPointSize(9.0);
+	glColor3f(0.0, 1.0, 0.0);
 	glBegin(GL_POINTS);
-	glVertex3d(endEffPos[0], endEffPos[1], endEffPos[2]);
-	glVertex3d(0.0, 2.0, -2.0);
+	glVertex3f(destination[0], destination[1], destination[2]);
+	glVertex3f(endEffPos[0], endEffPos[1], endEffPos[2]);
 	glEnd();
-	//glPopMatrix();
-
-	//// when the skeleton is drawn first time (before camera is rotated), store the endEff position to startPos
-	//if (firstDisplay)
-	//{
-	//	VecCopy(startPos, endEffPos);
-	//	animTcl::OutputMessage("start position = %f, %f, %f", startPos[0], startPos[1], startPos[2]);
-	//	firstDisplay = false;
-	//}
+	glPopAttrib();
+	
 }
 
 void SkeletonSystem::addJoint(Joint * joint)
@@ -160,6 +159,11 @@ void SkeletonSystem::setAngleParameter(double shoulderX, double shoulderY, doubl
 	updateJointAngle();
 }
 
+void SkeletonSystem::setDestination(VectorObj & dest)
+{
+	setVector(destination, dest.x(), dest.y(), dest.z());
+}
+
 void SkeletonSystem::computeJointTransform()
 {
 	if (!root)
@@ -227,32 +231,6 @@ void SkeletonSystem::updateJointAngle()
 
 void SkeletonSystem::computeMatrixSequence(double * result)
 {
-	/*Matrix resultMatrix = root->getTranslateMatrix() *
-		spine->getTranslateMatrix() *
-		leftCollar->getTranslateMatrix() *
-		leftShoulder->getRotZMatrix() *
-		leftShoulder->getRotYMatrix() *
-		leftShoulder->getRotXMatrix() *
-		leftShoulder->getTranslateMatrix() *
-		leftElbow->getRotYMatrix() *
-		leftElbow->getRotXMatrix() *
-		leftElbow->getTranslateMatrix() *
-		endEffector->getRotZMatrix() *
-		endEffector->getRotYMatrix();*/
-
-	// rotate then translate
-	/*Matrix resultMatrix = root->getTranslateMatrix() *
-		spine->getTranslateMatrix() *
-		leftShoulder->getRotZMatrix() *
-		leftShoulder->getRotYMatrix() *
-		leftShoulder->getRotXMatrix() *
-		leftCollar->getTranslateMatrix() *
-		leftElbow->getRotYMatrix() *
-		leftElbow->getRotXMatrix() *
-		leftShoulder->getTranslateMatrix() *
-		endEffector->getRotZMatrix() *
-		endEffector->getRotYMatrix() *
-		leftElbow->getTranslateMatrix();*/
 
 	// offset one joint
 	Matrix resultMatrix = root->getTranslateMatrix() *
@@ -343,7 +321,7 @@ bool SkeletonSystem::computeInverseJJt()
 	return true;
 }
 
-void SkeletonSystem::solveIK()
+void SkeletonSystem::solveIK(bool transposeMode)
 {
 	updateJacobian();
 	if (!computeInverseJJt()) return;
@@ -374,9 +352,18 @@ void SkeletonSystem::solveIK()
 	double dT[7] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 	// compute dT = transposeJ * beta
-	for (int i = 0; i < 7; i++)
-		for (int j = 0; j < 3; j++)
-			dT[i] += transposeJ[i][j] * beta[j];
+	if (transposeMode)
+	{
+		for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 3; j++)
+				dT[i] += transposeJ[i][j] * velocity[j];
+	}
+	else
+	{
+		for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 3; j++)
+				dT[i] += transposeJ[i][j] * beta[j];
+	}
 
 	setAngleParameter(t1 + dT[0], t2 + dT[1], t3 + dT[2], t4 + dT[3], t5 + dT[4], t6 + dT[5], t7 + dT[6]);
 }

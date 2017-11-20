@@ -26,6 +26,7 @@
 #include "SkeletonSystem.h"
 #include "SkeletonSimulator.h"
 #include "Joint.h"
+#include "Hermite.h"
 #include <util/jama/tnt_stopwatch.h>
 #include <util/jama/jama_lu.h>
 
@@ -194,9 +195,13 @@ static int partOneGlobalCommand(ClientData clientData, Tcl_Interp *interp, int a
 
 	initializeJoints(bob);
 
-	// note: can only rotate around z due to viewing issues when computing endEff position
-	bob->initialize(0, 0, 45, 0, 0, 0, 45);
-	//bob->initialize(0, 0, 0, 0, 45, 0, 0);
+	bob->initialize(0, 0, 0, 0, 0, 0, 0);
+
+	// regiseter a hermite
+	Hermite * hermiteSystem = new Hermite("hermite");
+	success = GlobalResourceManager::use()->addSystem(hermiteSystem , true);
+	assert(success);
+	iksim->setHermite(hermiteSystem);
 
 	glutPostRedisplay();
 
@@ -220,35 +225,36 @@ void mySetScriptCommands(Tcl_Interp *interp)
 void initializeJoints(SkeletonSystem* skeleton)
 {
 	Joint* root = new Joint("root");
+	root->initialize(0.0, 0.0, 2.0);
 	GlobalResourceManager::use()->addObject(root, true);
 	skeleton->addJoint(root);
 
 	Joint* spine = new Joint("spine");
-	spine->initialize(0.0, 2.0, 0.0);
+	spine->initialize(0.0, 3.0, 0.0);
 	GlobalResourceManager::use()->addObject(spine, true);
 	skeleton->addJoint(spine);
 	skeleton->setSpine(spine);
 
 	Joint* leftCollar = new Joint("leftCollar");
-	leftCollar->initialize(-0.25, 0.1, 0.0);
+	leftCollar->initialize(-0.5, 0.2, 0.0);
 	GlobalResourceManager::use()->addObject(leftCollar, true);
 	skeleton->addJoint(leftCollar);
 	skeleton->setLeftCollar(leftCollar);
 
 	Joint* leftShoulder = new Joint("leftShoulder");
-	leftShoulder->initialize(-1.0, 0.0, 0.0);
+	leftShoulder->initialize(-3, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(leftShoulder, true);
 	skeleton->addJoint(leftShoulder);
 	skeleton->setLeftShoulder(leftShoulder);
 
 	Joint* leftElbow = new Joint("leftElbow");
-	leftElbow->initialize(-1.0, 0.0, 0.0);
+	leftElbow->initialize(-3, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(leftElbow, true);
 	skeleton->addJoint(leftElbow);
 	skeleton->setLeftElbow(leftElbow);
 
 	Joint* leftWrist = new Joint("leftWrist");
-	leftWrist->initialize(-0.5, 0.0, 0.0);
+	leftWrist->initialize(-2, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(leftWrist, true);
 	skeleton->addEndEffector(leftWrist);
 
@@ -258,22 +264,22 @@ void initializeJoints(SkeletonSystem* skeleton)
 	skeleton->traverseUp(); // go back to spine
 
 	Joint* rightCollar = new Joint("rightCollar");
-	rightCollar->initialize(0.25, 0.1, 0.0);
+	rightCollar->initialize(0.5, 0.2, 0.0);
 	GlobalResourceManager::use()->addObject(rightCollar, true);
 	skeleton->addJoint(rightCollar);
 
 	Joint* rightShoulder = new Joint("rightShoulder");
-	rightShoulder->initialize(1.0, 0.0, 0.0);
+	rightShoulder->initialize(2.5, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightShoulder, true);
 	skeleton->addJoint(rightShoulder);
 
 	Joint* rightElbow = new Joint("rightElbow");
-	rightElbow->initialize(1.0, 0.0, 0.0);
+	rightElbow->initialize(2.5, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightElbow, true);
 	skeleton->addJoint(rightElbow);
 
 	Joint* rightWrist = new Joint("rightWrist");
-	rightWrist->initialize(0.5, 0.0, 0.0);
+	rightWrist->initialize(1.0, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightWrist, true);
 	skeleton->addJoint(rightWrist);
 
