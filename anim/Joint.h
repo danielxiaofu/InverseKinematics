@@ -98,6 +98,8 @@ public:
 
 	void setRotationZ(double z) { rot[2] = z; }
 
+	void setPosition(double x, double y, double z) { setVector(pos, x, y, z); }
+
 	// rotate around x axis by x degrees at next draw call
 	void rotateX(double x) { dx = x; }
 

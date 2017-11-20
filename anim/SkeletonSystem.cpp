@@ -12,7 +12,14 @@ SkeletonSystem::SkeletonSystem(const std::string & name)
 	zeroVector(destination);
 	transposeMode = false;
 	threshold = 0.94;
-	
+	rightArmBend = 0.0;
+
+	blackboard.ReadOBJ("data/blackboard.obj");
+	floor.ReadOBJ("data/floor.obj");
+	glmFacetNormals(&blackboard);
+	glmVertexNormals(&blackboard, 90);
+	glmFacetNormals(&floor);
+	glmVertexNormals(&floor, 90);
 }
 
 void SkeletonSystem::getState(double * p)
@@ -30,11 +37,11 @@ void SkeletonSystem::setState(double * p)
 	Vector newTarget;
 	setVector(newTarget, p[1], p[2], p[3]);
 	setVector(destination, p[4], p[5], p[6]);
-
 	endEffector->getWorldPosition(endEffPos);
 	VecSubtract(velocity, newTarget, endEffPos);
+
+	// solve ik
 	Vector targetP, error;
-	
 	VecAdd(targetP, endEffPos, velocity);
 	while (true)
 	{
@@ -49,18 +56,26 @@ void SkeletonSystem::setState(double * p)
 			transposeMode = false;
 			break;
 		}
+		// if error is too large, switch to transpose Jacobian method
 		else if (err > threshold * 4)
 			transposeMode = true;
 
 		VecSubtract(velocity, targetP, endEffPos);
 		VecScale(velocity, 0.5);
 	}
-	//solveIK();
+	
+	// bend right arm
+	if(rightArmBend > -45)
+		rightArmBend -= 1.0;
 	
 }
 
 void SkeletonSystem::reset(double time)
 {
+	zeroVector(destination);
+	transposeMode = false;
+	threshold = 0.94;
+	rightArmBend = 0.0;
 }
 
 void SkeletonSystem::display(GLenum mode)
@@ -82,6 +97,50 @@ void SkeletonSystem::display(GLenum mode)
 	glEnd();
 	glPopAttrib();
 	
+	//glEnable(GL_LIGHTING);
+	glMatrixMode(GL_MODELVIEW);
+	// draw blackboard and floor
+	glPushMatrix();
+	glTranslated(0.0, 3.0, 0.0);
+	glScaled(1.0, 1.0, 0.5);
+	if (blackboard.numvertices > 0)
+		glmDraw(&blackboard, GLM_SMOOTH);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(0.0, -2.8, 2.0);
+	glRotated(90, 1.0, 0.0, 0.0);
+	if (floor.numvertices > 0)
+		glmDraw(&floor, GLM_SMOOTH);
+	glPopMatrix();
+}
+
+int SkeletonSystem::command(int argc, myCONST_SPEC char ** argv)
+{
+	if (argc < 1)
+	{
+		animTcl::OutputMessage("system %s: wrong number of params.", m_name);
+		return TCL_ERROR;
+	}
+	else if (strcmp(argv[0], "position") == 0)
+	{
+		if (argc == 4)
+		{
+			double x = atof(argv[1]);
+			double y = atof(argv[2]);
+			double z = atof(argv[3]);
+			root->setPosition(x, y, z);
+			computeJointTransform();
+			glutPostRedisplay();
+			return TCL_OK;
+		}
+		else
+		{
+			animTcl::OutputMessage("Usage: position < x y z>");
+			return TCL_ERROR;
+		}
+	}
+	return 0;
 }
 
 void SkeletonSystem::addJoint(Joint * joint)
@@ -117,26 +176,6 @@ Joint * SkeletonSystem::traverseUp()
 		currentJoint = currentJoint->getParent();
 		return currentJoint;
 	}
-}
-
-void SkeletonSystem::getInitialPos(Vector outPos)
-{
-	if (!endEffector)
-	{
-		zeroVector(outPos);
-		return;
-	}		
-	Vector result;
-	zeroVector(result);
-	Joint* parent = endEffector;
-	while (parent != root)
-	{
-		Vector parentPos;
-		parent->getPosition(parentPos);
-		VecAdd(result, result, parentPos);
-		parent = parent->getParent();
-	}
-	VecCopy(outPos, result);
 }
 
 void SkeletonSystem::initialize(double shoulderX, double shoulderY, double shoulderZ, double elbowX, double elbowY, double wristY, double wristZ)
@@ -212,14 +251,6 @@ void SkeletonSystem::updateJacobian()
 
 void SkeletonSystem::updateJointAngle()
 {
-	//leftShoulder->setRotationX(t1);
-	//leftShoulder->setRotationY(t2);
-	//leftShoulder->setRotationZ(t3);
-	//leftElbow->setRotationX(t4);
-	//leftElbow->setRotationY(t5);
-	//endEffector->setRotationY(t6);
-	//endEffector->setRotationZ(t7);
-
 	leftCollar->setRotationX(t1);
 	leftCollar->setRotationY(t2);
 	leftCollar->setRotationZ(t3);
@@ -227,12 +258,12 @@ void SkeletonSystem::updateJointAngle()
 	leftShoulder->setRotationY(t5);
 	leftElbow->setRotationY(t6);
 	leftElbow->setRotationZ(t7);
+	rightCollar->setRotationZ(rightArmBend);
+	
 }
 
 void SkeletonSystem::computeMatrixSequence(double * result)
 {
-
-	// offset one joint
 	Matrix resultMatrix = root->getTranslateMatrix() *
 		spine->getTranslateMatrix() *
 		leftCollar->getTranslateMatrix() *
@@ -332,21 +363,6 @@ void SkeletonSystem::solveIK(bool transposeMode)
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
 			beta[i] += inverseJJt[i][j] * velocity[j];
-
-	////test inverse
-	//double test[3][3] = {
-	//	{ 0.0, 0.0, 0.0},
-	//	{ 0.0, 0.0, 0.0},
-	//	{ 0.0, 0.0, 0.0}
-	//};
-
-	//for (int i = 0; i < 3; i++)
-	//	for (int j = 0; j < 3; j++)
-	//		for(int k = 0; k < 3; k++)
-	//			test[i][j] += JJt[i][k] * inverseJJt[k][j];
-
-	//for (int i = 0; i < 3; i++)
-	//	animTcl::OutputMessage("%.2f, %.2f, %.2f", test[i][0], test[i][1], test[i][2]);
 
 	// delta angles
 	double dT[7] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};

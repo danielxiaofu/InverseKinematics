@@ -96,49 +96,38 @@ void MakeScene(void)
 
 	*/
 
-	/* SAMPLE SCENE */
+	GlobalResourceManager::use()->clearAll();
 
 	bool success;
 
-	// register a system
-	SampleParticle* sphere1 = new SampleParticle( "sphere1" );
+	// register a skeleton system
+	SkeletonSystem* bob = new SkeletonSystem("bob");
 
-	success = GlobalResourceManager::use()->addSystem( sphere1, true );
+	success = GlobalResourceManager::use()->addSystem(bob, true);
 
 	// make sure it was registered successfully
-	assert( success );
+	assert(success);
 
 	// register a simulator
-	SampleGravitySimulator* gravitySimulator = 
-		new SampleGravitySimulator( "gravity", sphere1 );
+	SkeletonSimulator* iksim =
+		new SkeletonSimulator("iksim", bob);
 
-	success = GlobalResourceManager::use()->addSimulator( gravitySimulator );
+	success = GlobalResourceManager::use()->addSimulator(iksim);
 
 	// make sure it was registered successfully
-	assert( success );
+	assert(success);
 
-	/* END SAMPLE SCENE */
+	initializeJoints(bob);
 
-	// the following code shows you how to retrieve a system that was registered 
-	// with the resource manager. 
+	bob->initialize(0, 0, 0, 0, 0, 0, 0);
 
-	BaseSystem* sampleSystemRetrieval;
+	// regiseter a hermite
+	Hermite * hermiteSystem = new Hermite("hermite");
+	success = GlobalResourceManager::use()->addSystem(hermiteSystem, true);
+	assert(success);
+	iksim->setHermite(hermiteSystem);
 
-	// retrieve the system
-	sampleSystemRetrieval = 
-		GlobalResourceManager::use()->getSystem( "sphere1" );
-
-	// make sure you got it
-	assert( sampleSystemRetrieval );
-
-	BaseSimulator* sampleSimulatorRetrieval;
-
-	// retrieve the simulator
-	sampleSimulatorRetrieval = 
-		GlobalResourceManager::use()->getSimulator( "gravity" );
-
-	// make sure you got it
-	assert( sampleSimulatorRetrieval );
+	glutPostRedisplay();
 
 }	// MakeScene
 
@@ -217,8 +206,6 @@ void mySetScriptCommands(Tcl_Interp *interp)
 
 	Tcl_CreateCommand(interp, "test", testGlobalCommand, (ClientData) NULL,
 					  (Tcl_CmdDeleteProc *)	NULL);
-	Tcl_CreateCommand(interp, "part1", partOneGlobalCommand, (ClientData)NULL,
-					(Tcl_CmdDeleteProc *)NULL);
 
 }	// mySetScriptCommands
 
@@ -267,19 +254,20 @@ void initializeJoints(SkeletonSystem* skeleton)
 	rightCollar->initialize(0.5, 0.2, 0.0);
 	GlobalResourceManager::use()->addObject(rightCollar, true);
 	skeleton->addJoint(rightCollar);
+	skeleton->setRightCollar(rightCollar);
 
 	Joint* rightShoulder = new Joint("rightShoulder");
-	rightShoulder->initialize(2.5, 0.0, 0.0);
+	rightShoulder->initialize(3, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightShoulder, true);
 	skeleton->addJoint(rightShoulder);
 
 	Joint* rightElbow = new Joint("rightElbow");
-	rightElbow->initialize(2.5, 0.0, 0.0);
+	rightElbow->initialize(3, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightElbow, true);
 	skeleton->addJoint(rightElbow);
 
 	Joint* rightWrist = new Joint("rightWrist");
-	rightWrist->initialize(1.0, 0.0, 0.0);
+	rightWrist->initialize(2.0, 0.0, 0.0);
 	GlobalResourceManager::use()->addObject(rightWrist, true);
 	skeleton->addJoint(rightWrist);
 

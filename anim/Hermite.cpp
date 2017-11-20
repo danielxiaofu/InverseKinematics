@@ -444,7 +444,6 @@ double Hermite::getTFromArcLengthNormalized(double arcLength)
 double Hermite::getTFromArcLength(double arcLength)
 {
 	return  _findArcLengthLinearSearch(arcLength);
-
 }	// Hermite::getTFromArcLength
 
 double Hermite::getArcLengthFromT(double t)
@@ -480,7 +479,6 @@ double Hermite::getRawArcLengthFromT(double t)
 	// TODO:: linearly interpolate the arc length between closest pair to get a better estimate for t
 
 	return arcLength;
-
 }	// Hermite::getRawArcLengthFromT
 
 double Hermite::_findArcLengthLinearSearchNormalized(double arcLength)

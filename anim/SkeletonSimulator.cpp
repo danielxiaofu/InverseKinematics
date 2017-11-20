@@ -12,12 +12,18 @@ SkeletonSimulator::SkeletonSimulator(const std::string & name, BaseSystem * targ
 	speed = 2.0;
 	hermiteLength = currentT = currentLength = 0.0;
 	destination = VectorObj(0.0, 0.0, 0.0);
+	zeroVector(velocity);
 }
 
 int SkeletonSimulator::step(double time)
 {
 	double delta = time - previous;
 	previous = time;
+	
+	// make sure the hermite length is not 0
+	if (abs(hermiteLength - 0.0) <= DBL_EPSILON)
+		return 0;
+
 	double p[7] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	Vector currentPosition;
 	Vector targetPosition;
@@ -53,8 +59,6 @@ int SkeletonSimulator::step(double time)
 
 int SkeletonSimulator::init(double time)
 {
-	setVector(velocity, 50.0, 0.0, 0.0);
-	previous = 0.0;
 	return 0;
 }
 
@@ -94,6 +98,21 @@ int SkeletonSimulator::command(int argc, myCONST_SPEC char ** argv)
 		}
 	}
 	return 0;
+}
+
+void SkeletonSimulator::reset(double time)
+{
+	previous = 0.0;
+	speed = 2.0;
+	hermiteLength = currentT = currentLength = 0.0;
+	hermite->setStartingArclength(0.0);
+	hermiteLength = hermite->getLength();
+	currentLength = hermite->getArcLengthFromT(0.0);
+	currentT = hermite->getTFromArcLength(currentLength);
+	hermite->getPoint(destination, currentT);
+	dynamic_cast<SkeletonSystem*>(m_object)->setDestination(destination);
+	dynamic_cast<SkeletonSystem*>(m_object)->initialize(0, 0, 45, 0, 0, 0, 45);
+	glutPostRedisplay();
 }
 
 void SkeletonSimulator::setHermite(Hermite* hermite_)

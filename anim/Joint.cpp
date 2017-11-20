@@ -254,13 +254,6 @@ void Joint::localDraw()
 
 		glPopMatrix();
 
-		// only draw lines
-		//glLineWidth(5.0);
-		//glBegin(GL_LINES);
-		//	glVertex3d(0.0, 0.0, 0.0);
-		//	glVertex3d(childPos[0], childPos[1], childPos[2]);
-		//glEnd();
-
 		glTranslated(childPos[0], childPos[1], childPos[2]);
 		glRotated(childRot[2], 0.0, 0.0, 1.0);
 		glRotated(childRot[1], 0.0, 1.0, 0.0);

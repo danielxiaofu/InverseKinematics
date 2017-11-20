@@ -13,6 +13,7 @@ public:
 	int step(double time);
 	int init(double time);
 	int command(int argc, myCONST_SPEC char **argv);
+	void reset(double time);
 
 	void setHermite(Hermite* hermite_);
 

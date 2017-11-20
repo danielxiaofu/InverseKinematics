@@ -14,6 +14,7 @@ public:
 	void reset(double time);
 
 	void display(GLenum mode = GL_RENDER);
+	int command(int argc, myCONST_SPEC char **argv);
 
 	/* add a joint under currentJoint, if there is no root joint, assign the joint to root. 
 	 * Then assign the new joint to currentJoint
@@ -38,8 +39,7 @@ public:
 
 	void setLeftElbow(Joint* leftElbow_) { leftElbow = leftElbow_; }
 
-	// get initial position of endEff
-	void getInitialPos(Vector outPos);
+	void setRightCollar(Joint* rightCollar_) { rightCollar = rightCollar_; }
 
 	// set initial angle parameter and compute start position of end effector
 	void initialize(double shoulderX, double shoulderY, double shoulderZ, double elbowX, double elbowY, double wristY, double wristZ);
@@ -60,6 +60,7 @@ protected:
 	Joint* spine;
 	Joint* leftCollar;
 	Joint* leftShoulder;
+	Joint* rightCollar;
 	Joint* leftElbow;
 	Joint* endEffector;
 
@@ -79,15 +80,19 @@ protected:
 	 * wrist: ry(t6), rz(t7)
 	 */
 	double t1, t2, t3, t4, t5, t6, t7;
+	double rightArmBend; // angle of right arm bend in degrees
 
 	bool transposeMode;
 
 	double jacobian[3][7];
-	double transposeJ[7][3];
-	double JJt[3][3];
+	double transposeJ[7][3]; // transpose of Jacobian
+	double JJt[3][3]; // transpose of product of Jacobian and transpose Jacobian
 	double inverseJJt[3][3];
 
 	double threshold;
+
+	GLMmodel blackboard;
+	GLMmodel floor;
 
 	void updateJointAngle();
 

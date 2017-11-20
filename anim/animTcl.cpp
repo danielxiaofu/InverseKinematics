@@ -123,7 +123,7 @@ int animTcl::Tcl_AppInit(Tcl_Interp *interp)
 	}
 	// read the start up file
 
-	sprintf(filename,"start.tcl");
+	//sprintf(filename,"start.tcl");
 
 
 	if (TCL_OK != Tcl_EvalFile(interp,filename) )
